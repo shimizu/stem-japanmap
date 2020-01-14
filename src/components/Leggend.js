@@ -16,7 +16,7 @@ const style = {
 export default (props) => {
 	return (
 		<div style={style}>
-			<style jsx>
+			<style>
 				{`
 					ul {
 						padding-left: 0.25em;

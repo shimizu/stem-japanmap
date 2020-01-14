@@ -4,7 +4,9 @@ import { renderLayers } from './components/RenderLayers';
 import Window from './components/Window.js';
 import Leggend from './components/Leggend.js';
 
-import { json } from 'd3-fetch';
+import { json, buffer } from 'd3-fetch';
+import Pbf from 'pbf';
+import Geobuf from 'geobuf';
 
 const CITYDATA_URL = './data/city.geojson';
 const PREFDATA_URL = './data/pref.geojson';
@@ -56,17 +58,21 @@ export default () => {
 	const [ detail, setDetail ] = useState();
 
 	useEffect(() => {
-		const fetchCityData = async () => {
-			const result = await json(CITYDATA_URL);
-			setCityData(result);
+		const fetchPrefBuff = async () => {
+			const result = await buffer('./data/pref.pbf');
+			const pd = new Pbf(new Uint8Array(result));
+			const geo = Geobuf.decode(pd);
+			setPrefData(geo);
 		};
-		const fetchPrefData = async () => {
-			const result = await json(PREFDATA_URL);
-			setPrefData(result);
-		};
+		fetchPrefBuff();
 
-		fetchCityData();
-		fetchPrefData();
+		const fetchCityBuff = async () => {
+			const result = await buffer('./data/city.pbf');
+			const pd = new Pbf(new Uint8Array(result));
+			const geo = Geobuf.decode(pd);
+			setCityData(geo);
+		};
+		fetchCityBuff();
 	}, []);
 
 	const [ viewport, setViewport ] = useState({
@@ -80,7 +86,6 @@ export default () => {
 		bearing: 0
 	});
 
-	//resize
 	useEffect(() => {
 		const handleResize = () => {
 			setViewport((v) => {
@@ -97,7 +102,6 @@ export default () => {
 	}, []);
 
 	const onClick = (d) => {
-		console.log('click', d.object.properties);
 		setDetail(d);
 	};
 	const windowClick = () => {
